@@ -107,7 +107,16 @@
   <paper-toolbar>
     <a href="/add"><paper-fab mini icon="add" id="addMember"></paper-fab></a>
     <paper-input label="Search (not working)"></paper-input>
-    <paper-button id="login" onclick="window.location.href='/authenticate'">Log in</paper-button>
+    <div>
+    
+                {% if user.is_authenticated()%}
+                   <paper-button id="logout" onclick="window.location.href='add.html/authenticate'">Log out</paper-button>
+                {% endif %}
+                {% if not user.is_authenticated()%}
+                    <paper-button id="login" onclick="window.location.href='/authenticate'">Log in</paper-button>
+                {% endif %}
+           
+</div>
   </paper-toolbar>
   <div>
     <h1 style="color: red"> This is a demo app. The stored names are fake and no real user names should be added.</h1>
