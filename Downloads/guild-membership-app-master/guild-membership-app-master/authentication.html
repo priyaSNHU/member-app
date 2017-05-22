@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/gold-email-input/gold-email-input.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+
+ <style is="custom-style">
+/* TODO: Share the style across the pages for a consistent look. */
+:root {
+  /* Label and underline color when the input is not focused */
+  --paper-input-container-color: var(--paper-orange-400);
+
+  /* Label and underline color when the input is focused */
+  --paper-input-container-focus-color: var(--paper-orange-400);
+
+  /* Label and underline color when the input is invalid
+  --paper-input-container-invalid-color: green; */
+
+  /* Input foreground color */
+  --paper-input-container-input-color: var(--paper-orange-400);
+
+  --paper-fab-background: var(--paper-orange-400);
+
+  --gold-phone-input-country-code: {
+    color: var(--paper-orange-400);
+  };
+}
+paper-button {
+  background-color: var(--paper-orange-400);
+    color: white;
+  --paper-button-raised-keyboard-focus: {
+      background-color: var(--paper-indigo-200) !important;
+      color: white !important;
+  };
+}
+paper-button[disabled] {
+  background-color: var(--google-grey-300);
+}
+#error {
+  color: red;
+}
+#success {
+  color: green;
+}
+</style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/3.8.0/firebase.js"></script>
+<script>
+// Initialize Firebase
+var config = {
+  apiKey: "AIzaSyBKd_f7wKyXeJsTL1KKgXTdQl07v8TYvYY",
+  // This is <PROJECT_ID>. Update when we move.
+  authDomain: "guild-demo-app.firebaseapp.com",
+  databaseURL: "https://guild-demo-app.firebaseio.com",
+  projectId: "guild-demo-app",
+  storageBucket: "guild-demo-app.appspot.com",
+  messagingSenderId: "504757276656"
+};
+
+function logError(errorMsg) {
+  error.innerHTML = errorMsg;
+  success.innerHTML = "";
+}
+
+function logSuccess(successMsg) {
+  error.innerHTML = "";
+  success.innerHTML = successMsg;
+}
+
+function signInFn() {
+  if (firebase.auth().currentUser) {
+    alert("Something is fishy: you appear logged in but ended up here. Notify Julien about this!");
+    firebase.auth().signOut();
+  }
+  var emailStr = email.value;
+  var passwordStr = password.value;
+  if (emailStr.length < 4 || emailStr.indexOf("@") == -1) {
+    logError("Please provide a valid email.");
+    return;
+  }
+  if (passwordStr < 4) {
+    logError("Please provide a valid password.");
+    return;
+  }
+  firebase.auth().signInWithEmailAndPassword(emailStr, passwordStr).catch(function(error) {
+    logError(error);
+    signIn.disabled = false;
+  });
+  // Prevent double-clicking.
+  signIn.disabled = true;
+}
+
+function createAccountFn() {
+  var emailStr = email.value;
+  var passwordStr = password.value;
+  if (passwordStr.lenght < 8) {
+    alert("Password should be 8 characters long.");
+    return;
+  }
+  firebase.auth().createUserWithEmailAndPassword(emailStr, passwordStr).catch(function(error) {
+    logError(error.message);
+    createAccount.disabled = false;
+  });
+  // Prevent double-clicking.
+  createAccount.disabled = true;
+}
+
+function resetPasswordFn() {
+  firebase.auth().sendPasswordResetEmail(email.value).then(function() {
+    alert("Email send!");
+  }).catch(function(error) {
+    logError(error.message);
+    resetPassword.disabled = false;
+  });
+  resetPassword.disabled = true;
+}
+
+function initializeFirebase() {
+  firebase.initializeApp(config);
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      signIn.disabled = true;
+      // TODO: We should enforce that the user.emailVerified is true
+      // to prevent impersonation. Note sure if that works with federated
+      // logins as it may not be exposed.
+
+      // Redirect to the normal page on success.
+      // TODO: We have lost the context of where the user was. Find a way to
+      // propagate it through if it makes sense.
+      // Based on
+      // http://stackoverflow.com/questions/503093/how-to-redirect-to-another-webpage-in-javascript-jquery,
+      // it seems like href is a better solution.
+      window.location.href = "/";
+    } else {
+      signIn.disabled = false;
+    }
+  });
+
+  // Register event listeners.
+  signIn.addEventListener("click", signInFn, true);
+  createAccount.addEventListener("click", createAccountFn, true);
+  resetPassword.addEventListener("click", resetPasswordFn, true);
+}
+window.addEventListener("load", initializeFirebase, true);
+</script>
+
+<body unresolved>
+You need to login:<br><br>
+
+<paper-button onclick="window.location.href='/glogin'">Log in with Google</paper-button>
+
+<!-- TODO: Better spacing here. -->
+<br>
+<br>
+OR
+<br>
+<br>
+<form is="iron-form" id="form">
+  <gold-email-input auto-validate label="Email" id="email" always-float-label></gold-email-input>
+  <!-- TODO: Validate the password length on the fly -->
+  <paper-input label="Password" id="password" type="password" minlength="8" always-float-label></paper-input>
+</form>
+<paper-button id="signIn">Sign-in</paper-button>
+<paper-button id="createAccount">Create account</paper-button><br><br>
+<paper-button id="resetPassword">Reset password</paper-button>
+<span id="error"></span>
+<span id="success"></span>

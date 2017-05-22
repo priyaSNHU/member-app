@@ -1,0 +1,4 @@
+google-auth
+httpclient
+six
+requests

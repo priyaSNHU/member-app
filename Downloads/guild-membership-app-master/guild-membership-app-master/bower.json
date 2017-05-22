@@ -1,0 +1,20 @@
+{
+  "name": "polymer-project",
+  "dependencies": {
+    "paper-listbox": "PolymerElements/paper-listbox#",
+    "paper-item": "PolymerElements/paper-item#",
+    "iron-list": "PolymerElements/iron-list#",
+    "iron-ajax": "PolymerElements/iron-ajax#",
+    "paper-icon-button": "PolymerElements/paper-icon-button#",
+    "paper-header-panel": "PolymerElements/paper-header-panel#",
+    "paper-toolbar": "PolymerElements/paper-toolbar#",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#",
+    "paper-input": "PolymerElements/paper-input#",
+    "paper-fab": "PolymerElements/paper-fab#",
+    "gold-email-input": "PolymerElements/gold-email-input#",
+    "gold-phone-input": "PolymerElements/gold-phone-input#",
+    "iron-form": "PolymerElements/iron-form#",
+    "paper-button": "PolymerElements/paper-button#",
+    "polymer": "Polymer/polymer#"
+  }
+}

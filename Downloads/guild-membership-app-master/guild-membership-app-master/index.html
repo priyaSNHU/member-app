@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <link rel="import" href="bower_components/polymer/polymer.html">
+  <link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+	<link rel="import" href="bower_components/paper-item/paper-item.html">
+  <link rel="import" href="bower_components/iron-icons/iron-icons.html">
+  <link rel="import" href="bower_components/paper-listbox/paper-listbox.html">
+	<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="bower_components/paper-header-panel/paper-header-panel.html">
+  <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
+  <link rel="import" href="bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+  <link rel="import" href="bower_components/paper-fab/paper-fab.html">
+  <link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+
+  <style is="custom-style">
+    /*paper-toolbar {
+      background-color: var(--paper-indigo-500);
+    }*/
+    :root {
+      /* Label and underline color when the input is not focused */
+      --paper-input-container-color: var(--paper-orange-400);
+
+      /* Label and underline color when the input is focused */
+      --paper-input-container-focus-color: var(--paper-orange-400);
+
+      /* Label and underline color when the input is invalid
+      --paper-input-container-invalid-color: green; */
+
+      /* Input foreground color */
+      --paper-input-container-input-color: var(--paper-orange-400);
+
+      --paper-fab-background: var(--paper-orange-400);
+    }
+    paper-input {
+      /* TODO: Too long on my machine but probably fine as a first draft. */
+      width: 80%;
+    }
+    paper-fab {
+      margin-right: 50px;
+    }
+    paper-button {
+      background-color: var(--paper-orange-400);
+        color: white;
+      --paper-button-raised-keyboard-focus: {
+          background-color: var(--paper-indigo-200) !important;
+          color: white !important;
+      };
+    }
+    paper-button[disabled] {
+      background-color: var(--google-grey-300);
+    }
+  </style>
+
+	<!-- Initialize Firebase -->
+	<script src="https://www.gstatic.com/firebasejs/3.8.0/firebase.js"></script>
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyBKd_f7wKyXeJsTL1KKgXTdQl07v8TYvYY",
+			// This is <PROJECT_ID>. Update when we move.
+			authDomain: "guild-demo-app.firebaseapp.com",
+			databaseURL: "https://guild-demo-app.firebaseio.com",
+			projectId: "guild-demo-app",
+			storageBucket: "guild-demo-app.appspot.com",
+			messagingSenderId: "504757276656"
+		};
+    var fbIdToken = null;
+		firebase.initializeApp(config);
+    firebase.auth().onAuthStateChanged(function(user) {
+      login.disable = true;
+      user.getToken().then(function(idToken) {
+        // Save the token for use with delete.
+        fbIdToken = idToken;
+        // Now that we have the Firebase information, restart the
+        // query. TODO: Move fully to Firebase authentication and
+        // only perform a single query.
+        getAllRequest.headers = {
+          "Authorization": "Bearer " + idToken
+        }
+        getAllRequest.generateRequest();
+      });
+    });
+	</script>
+  <script>
+    function deleteEntry(node) {
+      var email = node.parentElement.querySelector(".email").innerHTML;
+      if (fbIdToken != null) {
+        removeRequest.headers = {
+          "Authorization": "Bearer " + fbIdToken
+        }
+      }
+      // TODO: It seems like GET doesn't send a body. Investigate.
+      removeRequest.method = "POST";
+      removeRequest.body = email;
+      removeRequest.generateRequest();
+      // TODO: That's an horible way of regenerating the list...
+      window.location.reload(true);
+    }
+  </script>
+</head>
+
+<body class="fullbleed vertical layout">
+<paper-header-panel class="flex">
+  <paper-toolbar>
+    <a href="/add"><paper-fab mini icon="add" id="addMember"></paper-fab></a>
+    <paper-input label="Search (not working)"></paper-input>
+    <paper-button id="login" onclick="window.location.href='/authenticate'">Log in</paper-button>
+  </paper-toolbar>
+  <div>
+    <h1 style="color: red"> This is a demo app. The stored names are fake and no real user names should be added.</h1>
+    Current members:
+    <template is="dom-bind">
+      <iron-ajax url="/getall" id="getAllRequest" last-response="{{data}}" handle-as="json" auto></iron-ajax>
+      <iron-ajax url="/remove" id="removeRequest"></iron-ajax>
+
+      <paper-listbox multi>
+        <template is="dom-repeat" items="{{data}}">
+          <paper-item three-line>
+            <paper-item-body>
+            [[item.firstName]] [[item.lastName]]<br>
+            Tel: [[item.tel]]<br>
+            Email: <span class="email">[[item.email]]</span> <paper-icon-button icon="more-horiz" class="more"></paper-icon-button><paper-icon-button icon="delete" onclick="deleteEntry(this)"></paper-icon-button>
+            <paper-item-body>
+          </paper-item>
+        </template>
+      </paper-listbox>
+    </template>
+  </div>
+</paper-header-panel>
+</body>
+</html>

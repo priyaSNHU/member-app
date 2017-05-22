@@ -1,0 +1,17 @@
+Installing the dependencies:
+----------------------------
+
+$ bower install
+$ pip install -r requirements.txt -t lib/
+
+Workaround for RAND_egd import issue:
+-------------------------------------
+
+This may be needed if appengine dies with SSL due
+to being unable to import RAND_egd.
+
+See the patch:
+https://issuetracker.google.com/issues/35900282
+
+See the discussion:
+https://issuetracker.google.com/issues/35899425

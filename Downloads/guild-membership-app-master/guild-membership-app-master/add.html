@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/gold-email-input/gold-email-input.html">
+<link rel="import" href="bower_components/gold-phone-input/gold-phone-input.html">
+<link rel="import" href="bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="bower_components/iron-form/iron-form.html">
+
+<style is="custom-style">
+/* TODO: Share the style across the pages for a consistent look. */
+:root {
+  /* Label and underline color when the input is not focused */
+  --paper-input-container-color: var(--paper-orange-400);
+
+  /* Label and underline color when the input is focused */
+  --paper-input-container-focus-color: var(--paper-orange-400);
+
+  /* Label and underline color when the input is invalid
+  --paper-input-container-invalid-color: green; */
+
+  /* Input foreground color */
+  --paper-input-container-input-color: var(--paper-orange-400);
+
+  --paper-fab-background: var(--paper-orange-400);
+
+  --gold-phone-input-country-code: {
+    color: var(--paper-orange-400);
+  };
+}
+
+</style>
+
+<body unresolved>
+<form is="iron-form" id="form">
+  <paper-input label="First name" id="firstName" always-float-label autofocus></paper-input>
+  <paper-input label="Last name" id="lastName" always-float-label></paper-input>
+  <paper-textarea id="address" label="Address" always-float-label></paper-textarea>
+  <gold-phone-input auto-validate label="Phone" id="tel" always-float-label></gold-phone-input>
+  <gold-email-input auto-validate label="Email" id="email" always-float-label></gold-email-input>
+</form>
+
+<paper-fab mini icon="add" id="addMember"></paper-fab>
+
+<script>
+function realRequest() {
+  return {
+    "firstName": document.getElementById('firstName').value,
+    "lastName": document.getElementById('lastName').value,
+    "address": document.getElementById('address').value,
+    "tel": document.getElementById('tel').value,
+    "email": document.getElementById('email').value
+  };
+}
+
+function error() {
+  document.body.appendChild(document.createTextNode("Error adding new contact"));
+}
+
+function success() {
+  var addedText = document.createTextNode("Added new member!");
+  document.body.appendChild(addedText);
+  window.setTimeout(function() {
+    document.body.removeChild(addedText);
+  }, 5000);
+  document.getElementById("addMember").removeAttribute("disabled");
+  form.reset();
+}
+
+function fillAddRequest() {
+  // Poor man's prevention of double-clicks :)
+  document.getElementById("addMember").setAttribute("disabled", true);
+
+  this.request.method = "POST";
+  this.request.url = "/add";
+  this.request.params = "";
+  this.request.body = JSON.stringify(realRequest());
+  this.request.addEventListener("error", error);
+  this.request.addEventListener("response", success);
+
+}
+form.addEventListener("iron-form-presubmit", fillAddRequest, true);
+
+addMember.addEventListener("click", function() { form.submit(); });
+</script>
+
